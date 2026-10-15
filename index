@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informācija</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#4a6080;--navy2:#3d5575;--blue:#2d5be3;--blt:#e8eeff;--green:#1a7a4a;--glt:#e6f4ec;
+  --amber:#b86e00;--red:#c0392b;--ink:#2b3a55;--muted:#6b7a99;--border:#d0d8ea;--surf:#f4f6fb;
+  --mono:'DM Mono',ui-monospace,monospace;--sans:'DM Sans',system-ui,sans-serif;
+}
+body{font-family:var(--sans);background:var(--surf);color:var(--ink);min-height:100vh}
+
+.hdr{background:var(--navy);color:#fff;height:52px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.hdr h1{font-size:15px;font-weight:600}
+.acts{display:flex;align-items:center;gap:8px}
+.status{font-size:12px;white-space:nowrap}
+.status.ok{color:#bff0cf}.status.dirty{color:#ffe3a3}.status.err{color:#ffc9c2;font-weight:600}
+.btn{font-family:var(--sans);font-size:13px;font-weight:500;border-radius:6px;padding:7px 14px;cursor:pointer;border:none}
+.btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.btn-save{background:var(--blue);color:#fff}
+.btn-save:disabled{opacity:.45;cursor:default}
+.btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}
+
+.main{max-width:1400px;margin:0 auto;padding:16px}
+.setup{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.setup select{font-family:var(--sans);font-size:15px;padding:9px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--ink);min-width:130px}
+.setup select:focus{outline:2px solid var(--blue);outline-offset:1px}
+#sel-emp{min-width:170px}
+
+.msg{font-size:14px;color:var(--muted);padding:6px 2px 12px}
+.msg:empty{display:none}
+.msg.err{color:var(--red)}
+.msg button{margin-left:8px;font-family:var(--sans);font-size:13px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer}
+
+/* Dators */
+.table-wrap{background:#fff;border:1px solid var(--border);border-radius:10px;overflow-x:auto}
+.table-wrap:empty{display:none}
+table.grid{border-collapse:collapse;width:100%;table-layout:fixed;font-size:11px}
+.grid th{background:var(--navy);color:#fff;font-weight:500;font-size:10px;padding:5px 1px;border:1px solid rgba(255,255,255,.12);text-align:center;line-height:1.25}
+.grid th small{display:block;font-size:8px;opacity:.7;font-weight:400}
+.grid th.wk{background:var(--navy2)}
+.grid th.hol{background:#7a2525}
+.grid th.pre{background:#6b4a10}
+.grid th.c-name{width:64px}
+.grid th.c-type{width:28px}
+.grid th.c-sum{width:62px;background:#3a5070}
+.grid td{border:1px solid #c8d8f8;text-align:center;height:32px;padding:0}
+.grid td.name{background:#f8f9fc;font-weight:600;font-size:12px;border-left:3px solid var(--blue)}
+.grid td.type{font-family:var(--mono);font-weight:600;font-size:11px}
+tr.ra td{background:var(--blt)}
+tr.ra td.type{color:var(--blue)}
+tr.rs td{background:var(--glt);border-color:#b8e0cc}
+tr.rs td.type{color:var(--green)}
+tr.ra td.wk{background:#dbe5fb}
+tr.rs td.wk{background:#cfe4d7}
+tr.ra td.hol,tr.rs td.hol{background:#fbe3e3}
+.grid td input{width:100%;height:100%;border:none;background:transparent;font-family:var(--mono);font-size:10px;text-align:center;color:var(--ink);outline:none}
+.grid td input:focus{background:rgba(45,91,227,.14)}
+td.sum{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--navy)}
+input.sp{color:var(--amber);font-weight:600}
+input.bad{color:var(--red);font-weight:600;box-shadow:inset 0 0 0 2px var(--red)}
+
+/* Telefons */
+.mobile-view{display:none}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.card-h{background:var(--navy);color:#fff;padding:12px 14px;font-weight:600;font-size:15px}
+.days{padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.day{display:grid;grid-template-columns:40px 1fr 1fr;gap:6px;align-items:end}
+.dl{text-align:center;font-weight:600;font-size:14px;line-height:1.1;padding-bottom:11px}
+.dl small{display:block;font-size:10px;font-weight:400;color:var(--muted)}
+.day.wk .dl,.day.wk .dl small,.day.hol .dl,.day.hol .dl small{color:var(--red)}
+.fld{display:flex;flex-direction:column;gap:2px}
+.fl{font-size:10px;font-weight:700;color:var(--blue);padding-left:2px}
+.fl.s{color:var(--green)}
+.mi{width:100%;min-height:44px;border:1.5px solid #c8d8f8;border-radius:6px;background:#f0f5ff;font-family:var(--mono);font-size:16px;text-align:center;color:var(--ink);outline:none;-webkit-appearance:none;appearance:none}
+.mi.s{background:#f0f9f4;border-color:#b8e0cc}
+.day.wk .mi{background:#e9eef9}
+.day.wk .mi.s{background:#e3f0e8}
+.day.hol .mi{background:#fff0f0;border-color:#f0b8b8}
+.mi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(45,91,227,.15)}
+.sums{display:flex;gap:18px;padding:10px 14px 14px;border-top:1px solid var(--border)}
+.sums div{display:flex;flex-direction:column}
+.sums span{font-size:11px;font-weight:600;color:var(--muted)}
+.sums b{font-family:var(--mono);font-size:18px;color:var(--navy)}
+.sums .norm{margin-left:auto}
+
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,8px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:99;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--red)}
+.print-title{display:none}
+
+@media (max-width:1024px){
+  .desktop-view{display:none}
+  .mobile-view{display:block}
+  .main{padding:10px 8px}
+  .hdr{padding:0 10px}
+  .status{font-size:11px}
+  #sel-month{flex:2 1 0}
+  #sel-year{flex:1 1 0;min-width:90px}
+  #sel-emp{flex:1 1 100%}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{background:#fff}
+  .hdr,.setup,.msg,.toast,.mobile-view{display:none!important}
+  .desktop-view{display:block!important}
+  .main{padding:0;max-width:none}
+  .print-title{display:block;font-size:12pt;font-weight:600;margin-bottom:6px}
+  .table-wrap{border:none;overflow:visible}
+  .grid{font-size:7pt}
+  .grid td{height:16pt}
+  .grid td input{font-size:7pt}
+  @page{size:A4 landscape;margin:8mm}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <h1>Informācija</h1>
+  <div class="acts">
+    <span id="status" class="status" aria-live="polite"></span>
+    <button id="btn-save" class="btn btn-save" disabled>Saglabāt</button>
+    <button class="btn btn-ghost" onclick="window.print()" aria-label="Drukāt">🖨</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="setup">
+    <select id="sel-month" aria-label="Mēnesis">
+      <option value="" disabled selected>izvēlies</option>
+      <option value="0">Janvāris</option><option value="1">Februāris</option>
+      <option value="2">Marts</option><option value="3">Aprīlis</option>
+      <option value="4">Maijs</option><option value="5">Jūnijs</option>
+      <option value="6">Jūlijs</option><option value="7">Augusts</option>
+      <option value="8">Septembris</option><option value="9">Oktobris</option>
+      <option value="10">Novembris</option><option value="11">Decembris</option>
+    </select>
+    <select id="sel-year" aria-label="Gads"></select>
+    <select id="sel-emp" aria-label="Darbinieks">
+      <option value="" disabled selected>izvēlies sevi</option>
+    </select>
+  </div>
+
+  <div id="msg" class="msg"></div>
+  <div id="print-title" class="print-title"></div>
+  <div class="desktop-view"><div id="dt" class="table-wrap"></div></div>
+  <div class="mobile-view" id="mob"></div>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+var API = "https://script.google.com/macros/s/AKfycbysVu7kkKO3JEgzS8WSPKWh-EBVNfGyXblAtb0YZ9QHC2dAugqOLv7JRyCS__TP2wJAGw/exec";
+
+var TYPES = ["AMB", "STAC"];
+var TL = { AMB: "A", STAC: "S" };
+var MON = ["Janvāris","Februāris","Marts","Aprīlis","Maijs","Jūnijs","Jūlijs","Augusts","Septembris","Oktobris","Novembris","Decembris"];
+var DOW = ["Sv","P","O","T","C","Pk","S"];
+var NORMS = { 2026: [0,168,160,176,158,152,159,184,168,176,176,159,158] }; // zināmās normas
+var EXTRA_HOL = { 2026: ["6-22"] };                                         // pārceltās brīvdienas
+
+var S = { emp: "", m0: -1, y: 0, days: 0, cells: {}, pending: {}, ready: false, seq: 0, saving: null, timer: null };
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ── Kalendārs ─────────────────────────────────────────────── */
+function daysIn(y, m0) { return new Date(y, m0 + 1, 0).getDate(); }
+function easter(y) {
+  var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e4 = b % 4,
+      f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+      i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e4 + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+      mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(y, mo - 1, da);
+}
+var holCache = {};
+function hols(y) {
+  if (holCache[y]) return holCache[y];
+  var set = {};
+  function add(dt) { set[(dt.getMonth() + 1) + "-" + dt.getDate()] = 1; }
+  ["1-1","5-1","5-4","6-23","6-24","11-18","12-24","12-25","12-26","12-31"].forEach(function (k) { set[k] = 1; });
+  var E = easter(y);
+  [-2, 0, 1, 49].forEach(function (o) { add(new Date(y, E.getMonth(), E.getDate() + o)); });
+  ["5-4", "11-18"].forEach(function (k) {       // ja iekrīt brīvdienā — nākamā darbdiena brīva
+    var p = k.split("-"), dt = new Date(y, +p[0] - 1, +p[1]), w = dt.getDay();
+    if (w === 6) add(new Date(y, dt.getMonth(), dt.getDate() + 2));
+    if (w === 0) add(new Date(y, dt.getMonth(), dt.getDate() + 1));
+  });
+  (EXTRA_HOL[y] || []).forEach(function (k) { set[k] = 1; });
+  return (holCache[y] = set);
+}
+function isHol(y, m0, d) { var dt = new Date(y, m0, d); return !!hols(dt.getFullYear())[(dt.getMonth() + 1) + "-" + dt.getDate()]; }
+function isWknd(y, m0, d) { var w = new Date(y, m0, d).getDay(); return w === 0 || w === 6; }
+function isWork(y, m0, d) { return !isWknd(y, m0, d) && !isHol(y, m0, d); }
+function isPre(y, m0, d) { return isWork(y, m0, d) && isHol(y, m0, d + 1); }
+function norm(y, m0) {
+  if (NORMS[y]) return NORMS[y][m0 + 1];
+  var n = 0, dim = daysIn(y, m0);
+  for (var d = 1; d <= dim; d++) if (isWork(y, m0, d)) n += isPre(y, m0, d) ? 7 : 8;
+  return n;
+}
+
+/* ── Laiki ─────────────────────────────────────────────────── */
+function parseMin(v) {
+  v = String(v == null ? "" : v).trim().replace(/[\u2013\u2014_]/g, "-").replace(/"/g, ":").replace(/\s*-\s*/, "-");
+  var m = v.match(/^(\d{1,2})(?:[.:](\d{2}))?\.?-(\d{1,2})(?:[.:](\d{2}))?\.?$/);
+  if (!m) return null;
+  var a = +m[1], am = +(m[2] || 0), b = +m[3], bm = +(m[4] || 0);
+  if (a > 24 || b > 24 || am > 59 || bm > 59) return null;
+  var diff = (b * 60 + bm) - (a * 60 + am);
+  return diff > 0 ? diff : null;
+}
+function vcls(v) {
+  v = String(v == null ? "" : v).trim();
+  if (!v || parseMin(v) !== null) return "";
+  return /\d/.test(v) ? "bad" : "sp";
+}
+function fmt(min) {
+  if (!min) return "";
+  return String(Math.round(min / 6) / 10);
+}
+
+/* ── Serveris ──────────────────────────────────────────────── */
+function apiGet(p) {
+  var q = Object.keys(p).map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(p[k]); }).join("&");
+  return fetch(API + "?" + q + "&_=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); });
+}
+function apiPost(b) {
+  return fetch(API, { method: "POST", body: JSON.stringify(b) }).then(function (r) { return r.json(); });
+}
+
+/* ── Paziņojumi ────────────────────────────────────────────── */
+function msg(html, err) { var el = $("msg"); el.innerHTML = html || ""; el.className = "msg" + (err ? " err" : ""); }
+function setStatus(s) {
+  var map = { saving: ["Saglabā…", ""], ok: ["Saglabāts ✓", "ok"], dirty: ["Nesaglabāts", "dirty"], err: ["⚠ Nav saglabāts", "err"] };
+  var m = map[s] || ["", ""];
+  $("status").textContent = m[0];
+  $("status").className = "status " + m[1];
+}
+var toastT;
+function toast(t, err) {
+  var el = $("toast");
+  el.textContent = t;
+  el.className = "toast show" + (err ? " err" : "");
+  clearTimeout(toastT);
+  toastT = setTimeout(function () { el.className = "toast" + (err ? " err" : ""); }, err ? 4500 : 2200);
+}
+
+/* ── Saraksts un izvēle ────────────────────────────────────── */
+function loadEmps() {
+  msg("Ielādē…");
+  apiGet({ action: "list" }).then(function (r) {
+    if (!r || !r.ok) throw new Error(r && r.error || "");
+    var sel = $("sel-emp");
+    (r.emps || []).slice().sort(function (a, b) { return a.localeCompare(b, "lv"); }).forEach(function (n) {
+      var o = document.createElement("option"); o.value = n; o.textContent = n; sel.appendChild(o);
+    });
+    msg("");
+  }).catch(function (err) {
+    msg("Neizdevās ielādēt sarakstu." + (err && err.message ? " (" + esc(err.message) + ")" : "") +
+        ' <button onclick="location.reload()">Pārlādēt</button>', true);
+  });
+}
+
+function onSel() {
+  var nm = $("sel-month").value, ny = $("sel-year").value, ne = $("sel-emp").value;
+  function apply() {
+    clearTimeout(S.timer);
+    S.m0 = nm === "" ? -1 : +nm; S.y = +ny; S.emp = ne;
+    S.cells = {}; S.pending = {}; S.ready = false; S.days = 0; S.seq++;
+    setStatus(""); msg(""); render();
+    if (S.m0 >= 0 && S.emp) load();
+  }
+  if (S.ready && hasPending()) {
+    save(false).then(apply, function () {
+      if (confirm("Izmaiņas nav saglabātas. Turpināt un tās zaudēt?")) apply();
+      else { $("sel-month").value = String(S.m0); $("sel-year").value = String(S.y); $("sel-emp").value = S.emp; }
+    });
+  } else apply();
+}
+
+function load() {
+  var seq = ++S.seq;
+  msg("Ielādē…");
+  apiGet({ action: "get", emp: S.emp, month: S.m0 + 1, year: S.y }).then(function (r) {
+    if (seq !== S.seq) return;
+    if (!r || !r.ok) throw new Error(r && r.error || "");
+    S.cells = r.cells || {}; S.pending = {}; S.days = daysIn(S.y, S.m0); S.ready = true;
+    msg(""); render();
+  }).catch(function (err) {
+    if (seq !== S.seq) return;
+    msg("Neizdevās ielādēt datus." + (err && err.message ? " (" + esc(err.message) + ")" : "") +
+        ' <button onclick="load()">Mēģināt vēlreiz</button>', true);
+  });
+}
+
+/* ── Zīmēšana ──────────────────────────────────────────────── */
+function render() {
+  var dt = $("dt"), mob = $("mob");
+  $("btn-save").disabled = !S.ready;
+  if (!S.ready) { dt.innerHTML = ""; mob.innerHTML = ""; $("print-title").textContent = ""; return; }
+
+  var y = S.y, m0 = S.m0, n = S.days, nm = norm(y, m0), d, w, c;
+  $("print-title").textContent = S.emp + " — " + MON[m0] + " " + y;
+
+  // Dators
+  var h = '<table class="grid"><thead><tr><th class="c-name"></th><th class="c-type"></th>';
+  for (d = 1; d <= n; d++) {
+    w = new Date(y, m0, d).getDay();
+    c = isHol(y, m0, d) ? "hol" : isPre(y, m0, d) ? "pre" : (w === 0 || w === 6) ? "wk" : "";
+    h += '<th class="' + c + '">' + d + "<small>" + DOW[w] + "</small></th>";
+  }
+  h += '<th class="c-sum">Kopā' + (nm ? "<small>norma " + nm + "h</small>" : "") + "</th></tr></thead><tbody>";
+  TYPES.forEach(function (t, ti) {
+    h += '<tr class="' + (ti ? "rs" : "ra") + '">';
+    if (!ti) h += '<td class="name" rowspan="2">' + esc(S.emp) + "</td>";
+    h += '<td class="type">' + TL[t] + "</td>";
+    for (var dd = 1; dd <= n; dd++) {
+      var k = t + "_" + dd, v = S.cells[k] || "";
+      var cc = isHol(y, m0, dd) ? "hol" : isWknd(y, m0, dd) ? "wk" : "";
+      h += '<td class="' + cc + '"><input data-k="' + k + '" value="' + esc(v) + '" class="' + vcls(v) +
+           '" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="' + TL[t] + " " + dd + '"></td>';
+    }
+    h += '<td class="sum" data-sum="' + t + '"></td></tr>';
+  });
+  dt.innerHTML = h + "</tbody></table>";
+
+  // Telefons
+  var hm = '<div class="card"><div class="card-h">' + esc(S.emp) + ", " + MON[m0] + " " + y + '</div><div class="days">';
+  for (d = 1; d <= n; d++) {
+    w = new Date(y, m0, d).getDay();
+    c = isHol(y, m0, d) ? " hol" : (w === 0 || w === 6) ? " wk" : "";
+    hm += '<div class="day' + c + '"><div class="dl">' + d + "<small>" + DOW[w] + "</small></div>";
+    TYPES.forEach(function (t, ti) {
+      var k = t + "_" + d, v = S.cells[k] || "";
+      hm += '<div class="fld"><span class="fl' + (ti ? " s" : "") + '">' + TL[t] + "</span>" +
+            '<input class="mi' + (ti ? " s" : "") + " " + vcls(v) + '" data-k="' + k + '" value="' + esc(v) +
+            '" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next" aria-label="' +
+            TL[t] + " " + d + '"></div>';
+    });
+    hm += "</div>";
+  }
+  hm += '</div><div class="sums"><div><span>A</span><b data-sum="AMB"></b></div><div><span>S</span><b data-sum="STAC"></b></div>' +
+        (nm ? '<div class="norm"><span>Norma</span><b>' + nm + "h</b></div>" : "") + "</div></div>";
+  mob.innerHTML = hm;
+  sums();
+}
+
+function sums() {
+  TYPES.forEach(function (t) {
+    var tot = 0;
+    for (var d = 1; d <= S.days; d++) { var x = parseMin(S.cells[t + "_" + d]); if (x) tot += x; }
+    var txt = fmt(tot);
+    document.querySelectorAll('[data-sum="' + t + '"]').forEach(function (el) {
+      el.textContent = txt || (el.tagName === "B" ? "—" : "");
+    });
+  });
+}
+
+function setCls(el, v) { var c = vcls(v); el.classList.toggle("sp", c === "sp"); el.classList.toggle("bad", c === "bad"); }
+
+/* ── Saglabāšana ───────────────────────────────────────────── */
+function hasPending() { for (var k in S.pending) return true; return false; }
+function schedule(ms) { clearTimeout(S.timer); S.timer = setTimeout(function () { save(false).catch(function () {}); }, ms); }
+
+// all=false: tikai mainītās šūnas; all=true: viss redzamais mēnesis (poga "Saglabāt")
+function save(all) {
+  if (!S.ready) return Promise.resolve(0);
+  if (S.saving) return S.saving.then(function () { return save(all); }, function () { return save(all); });
+
+  var src = {}, k, d;
+  if (all) { for (d = 1; d <= S.days; d++) TYPES.forEach(function (t) { src[t + "_" + d] = S.cells[t + "_" + d] || ""; }); }
+  else { for (k in S.pending) src[k] = S.pending[k]; }
+  var keys = Object.keys(src);
+  if (!keys.length) return Promise.resolve(0);
+
+  var ctx = { emp: S.emp, m0: S.m0, y: S.y };
+  var cells = keys.map(function (k) { var p = k.split("_"); return { t: p[0], d: +p[1], v: String(src[k]).trim() }; });
+  clearTimeout(S.timer);
+  setStatus("saving");
+
+  var pr = apiPost({ action: "save", emp: ctx.emp, month: ctx.m0 + 1, year: ctx.y, cells: cells }).then(function (r) {
+    if (!r || !r.ok) throw new Error(r && r.error || "Kļūda");
+    if (ctx.emp === S.emp && ctx.m0 === S.m0 && ctx.y === S.y) {
+      keys.forEach(function (k) { if (k in S.pending && S.pending[k] === src[k]) delete S.pending[k]; });
+    }
+    S.saving = null;
+    if (hasPending()) { setStatus("dirty"); schedule(500); } else setStatus("ok");
+    return cells.length;
+  }, function (err) {
+    S.saving = null;
+    setStatus("err");
+    schedule(10000); // mēģina vēlreiz
+    throw err;
+  });
+  S.saving = pr;
+  return pr;
+}
+
+function beacon() {
+  if (!S.ready || !hasPending() || !navigator.sendBeacon) return;
+  var cells = Object.keys(S.pending).map(function (k) { var p = k.split("_"); return { t: p[0], d: +p[1], v: String(S.pending[k]).trim() }; });
+  try {
+    navigator.sendBeacon(API, new Blob([JSON.stringify({ action: "save", emp: S.emp, month: S.m0 + 1, year: S.y, cells: cells })], { type: "text/plain" }));
+  } catch (x) {}
+}
+
+/* ── Notikumi ──────────────────────────────────────────────── */
+document.addEventListener("input", function (ev) {
+  var el = ev.target, k = el.getAttribute && el.getAttribute("data-k");
+  if (!k || !S.ready) return;
+  var v = el.value;
+  S.cells[k] = v; S.pending[k] = v;
+  document.querySelectorAll('input[data-k="' + k + '"]').forEach(function (o) { if (o !== el) o.value = v; setCls(o, v); });
+  sums();
+  setStatus("dirty");
+  schedule(1500);
+});
+document.addEventListener("change", function (ev) {
+  if (ev.target.getAttribute && ev.target.getAttribute("data-k")) schedule(100);
+});
+document.addEventListener("keydown", function (ev) {
+  if (ev.key !== "Enter") return;
+  var el = ev.target;
+  if (!el.getAttribute || !el.getAttribute("data-k")) return;
+  ev.preventDefault();
+  var list = Array.prototype.filter.call(document.querySelectorAll("input[data-k]"), function (i) { return i.offsetParent !== null; });
+  var i = list.indexOf(el);
+  if (i > -1 && i < list.length - 1) list[i + 1].focus(); else el.blur();
+});
+document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") beacon(); });
+window.addEventListener("pagehide", beacon);
+window.addEventListener("beforeunload", function (ev) {
+  if (S.ready && hasPending()) { beacon(); ev.preventDefault(); ev.returnValue = ""; }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  var y = new Date().getFullYear(), ys = $("sel-year");
+  [y - 1, y, y + 1].forEach(function (v) {
+    var o = document.createElement("option"); o.value = v; o.textContent = v; if (v === y) o.selected = true; ys.appendChild(o);
+  });
+  S.y = y;
+  ["sel-month", "sel-year", "sel-emp"].forEach(function (id) { $(id).addEventListener("change", onSel); });
+  $("btn-save").addEventListener("click", function () {
+    if (!S.ready) return;
+    save(true).then(function () { toast("Saglabāts ✓"); }, function () {
+      toast("Neizdevās saglabāt. Pārbaudi internetu un mēģini vēlreiz.", true);
+    });
+  });
+  loadEmps();
+});
+</script>
+</body>
+</html>
